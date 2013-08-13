@@ -1,12 +1,6 @@
-package org.awesomeware.mud
+package awesomeware
 
 import java.net.Socket
-
-/**
-
-Copyright Awesomeware Org
-
-*/
 
 sealed trait Message
 

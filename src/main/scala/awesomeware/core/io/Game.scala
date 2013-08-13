@@ -1,4 +1,4 @@
-package org.awesomeware.mud;
+package awesomeware.core.io
 
 import akka.actor._
 import java.net.InetSocketAddress

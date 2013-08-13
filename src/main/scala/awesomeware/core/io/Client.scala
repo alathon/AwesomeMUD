@@ -1,10 +1,10 @@
-package org.awesomeware.mud
+package awesomeware.core.io
 
-import java.io._
 import akka.actor._
 import java.net.{InetSocketAddress, Socket}
 import akka.util.ByteString
 import akka.io.Tcp
+import awesomeware.core.{Mob, TheVoid}
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
@@ -13,6 +13,11 @@ object Client {
 
 class Client(remote:InetSocketAddress, connection:ActorRef) extends Actor with ActorLogging {
   context.watch(connection)
+  connection ! Tcp.Write(ByteString("Hello and welcome."))
+
+  var player:Mob = new Mob()
+  player.client = this
+  player.Move(TheVoid)
 
   def receive: Receive = {
     case Tcp.Received(data: ByteString) =>
@@ -25,5 +30,7 @@ class Client(remote:InetSocketAddress, connection:ActorRef) extends Actor with A
     case Terminated(`connection`) =>
       log.info("Stopping, because connection for remote address {} died", remote)
       context.stop(self)
+    case s =>
+      log.info("Received " + s)
   }
 }

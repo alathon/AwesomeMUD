@@ -1,10 +1,4 @@
-package org.awesomeware.mud
-
-/**
-
-Copyright Awesomeware Org
-
-  */
+package awesomeware.core.io
 
 import akka.actor._
 import java.net.InetSocketAddress
@@ -22,5 +16,8 @@ class GameServer(endpoint: InetSocketAddress) extends Actor with ActorLogging{
     case Tcp.Connected(remote, _) =>
       log.info("Remote address {} connected", remote)
       sender ! Tcp.Register(context.actorOf(Client.props(remote, sender)))
+
+    case Tcp.CommandFailed(cmd) =>
+      println("Command failed: " + cmd)
   }
 }
