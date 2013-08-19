@@ -1,5 +1,7 @@
 package awesomeware.core
 
+import awesomeware.core.entities.GameEntity
+
 trait Container {
   var inventory:List[GameEntity] = List()
 
@@ -7,14 +9,14 @@ trait Container {
 
   def canExit(obj: GameEntity, to: Container):Boolean = true
 
-  def Entered(obj: GameEntity, from: Container) {
+  def entered(obj: GameEntity, from: Container) {
     println(obj + " entered from " + from)
     for (e <- inventory) {
       println("In inventory: " + e)
     }
   }
 
-  def Exited(obj: GameEntity, to: Container) {
+  def exited(obj: GameEntity, to: Container) {
     println(obj + " exited to " + to)
   }
 

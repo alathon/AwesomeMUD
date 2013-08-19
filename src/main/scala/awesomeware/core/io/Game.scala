@@ -8,6 +8,6 @@ object Game extends App {
   val endpoint = new InetSocketAddress("localhost", 8888)
   sys.actorOf(GameServer.props(endpoint), "Awesome")
 
-  scala.io.ReadStdin.readLine(s"Hit ENTER to exit ...")
+  readLine(s"Hit ENTER to continue")
   sys.shutdown()
 }

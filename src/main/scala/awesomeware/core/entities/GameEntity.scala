@@ -1,7 +1,7 @@
-package awesomeware.core
-
-import akka.actor.{ActorLogging, Actor}
+package awesomeware.core.entities
 import awesomeware.core.io.Client
+import awesomeware.core.DescType._
+import awesomeware.core.Container
 
 /**
  * Base class for all entities in the game world.
@@ -13,8 +13,18 @@ import awesomeware.core.io.Client
 abstract class GameEntity{
   var location: Container = null
   var client:Client = null
-
-  def Move(to: Container):Boolean = {
+  
+  // Sending text to a GameEntity is the same as sending to its
+  // client, if one is attached.
+  def receiveText(text: String) {
+    if(this.client != null) {
+      this.client.receiveText(text)
+    }
+  }
+  
+  def describeTo(to: GameEntity, dtype: DescType): String
+  
+  def move(to: Container):Boolean = {
     if(this.location != null && !this.location.canExit(this, to)) {
       return false
     }
@@ -29,16 +39,9 @@ abstract class GameEntity{
     to.addEntity(this)
     if(oldLoc != null) {
       oldLoc.removeEntity(this)
-      oldLoc.Exited(this, to)
+      oldLoc.exited(this, to)
     }
-    to.Entered(this, oldLoc)
+    to.entered(this, oldLoc)
     true
-  }
-
-  def Entered(to: Container, from: Container) {
-
-  }
-  def Exited(from: Container) {
-
   }
 }

@@ -4,23 +4,39 @@ import akka.actor._
 import java.net.{InetSocketAddress, Socket}
 import akka.util.ByteString
 import akka.io.Tcp
-import awesomeware.core.{Mob, TheVoid}
+import awesomeware.core.entities.Mob
+import awesomeware.commands.impl.WhoCommand
+import awesomeware.commands.CommandInterpreter
+import scala.collection.mutable.ArrayBuffer
+import awesomeware.commands.Command
+import awesomeware.content.staticContent._
+import awesomeware.commands.Commander
+import awesomeware.core.entities.GameEntity
+import awesomeware.commands.impl.BasicUtilityCommands
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
     Props(new Client(remote, connection))
 }
 
-class Client(remote:InetSocketAddress, connection:ActorRef) extends Actor with ActorLogging {
+class Client(remote:InetSocketAddress, connection:ActorRef) 
+	extends Actor with ActorLogging with Commander {
+  /**
+   * Input and output
+   */
+  def receiveText(str: String) {
+    this.write(ByteString(str))
+  }
+
   def write(s: ByteString) {
     connection ! Tcp.Write(s)
   }
 
   def receive: Receive = {
     case Tcp.Received(data: ByteString) =>
-      val text = data.utf8String.trim
+      val text = data.utf8String.replaceAll("[\r\n]+$", "")
+      this.handleCommand(text)
       log.info("Received {} from remote address {}", text, remote)
-      sender ! Tcp.Write(data)
     case _: Tcp.ConnectionClosed =>
       log.info("Stopping, because connection for remote address {} closed", remote)
       context.stop(self)
@@ -33,10 +49,17 @@ class Client(remote:InetSocketAddress, connection:ActorRef) extends Actor with A
 
   // Initialization
   context.watch(connection)
-
+  
+  /** Commander */
+  def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
+  
+  /**
+   * Login stuff.
+   */
+  BasicUtilityCommands.giveAll(this)
+  
   var player:Mob = new Mob()
   player.client = this
-  player.Move(TheVoid)
-
+  player.move(TheVoid)
   this.write(ByteString("Hello and welcome."))
 }
