@@ -25,6 +25,7 @@ case class Failure[+T](msg: String, in:ParseState) extends Result[T] {
 
 abstract class Command {
 	val components:Seq[CommandComponent[_]]
+	val name:String
 	
 	def go(source: GameEntity, args: Seq[Result[_]])
 

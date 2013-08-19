@@ -13,9 +13,7 @@ import awesomeware.core.Container
 abstract class GameEntity{
   var location: Container = null
   var client:Client = null
-  
-  // Sending text to a GameEntity is the same as sending to its
-  // client, if one is attached.
+
   def receiveText(text: String) {
     if(this.client != null) {
       this.client.receiveText(text)

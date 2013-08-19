@@ -12,6 +12,8 @@ object BasicUtilityCommands extends CommandGifter {
 
 object WhoCommand extends Command {
   val components = List(new Word("who"))
+  val name = "who"
+
   def go(source: GameEntity, args: Seq[Result[_]]) {
     val b = new StringBuilder()
     b ++= "---------------\n"

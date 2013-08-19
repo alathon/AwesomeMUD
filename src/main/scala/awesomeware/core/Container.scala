@@ -14,7 +14,7 @@ trait Container {
   }
 
   def exited(obj: GameEntity, to: Container) {
-    
+
   }
 
   def removeEntity[T <: GameEntity](e: T) {

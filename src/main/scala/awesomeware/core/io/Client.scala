@@ -53,6 +53,15 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
   /** Commander */
   def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
   
+  def handleNoCommand(text: String) {
+    this.receiveText(s"Command not understood: $text")
+  }
+  
+  def handleInvalidSyntax(text: String, command: Command) {
+    val niceName = command.name
+    this.receiveText(s"Invalid syntax for command $niceName")
+  }
+  
   /**
    * Login stuff.
    */
