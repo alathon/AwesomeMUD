@@ -12,12 +12,9 @@ object Client {
 }
 
 class Client(remote:InetSocketAddress, connection:ActorRef) extends Actor with ActorLogging {
-  context.watch(connection)
-  connection ! Tcp.Write(ByteString("Hello and welcome."))
-
-  var player:Mob = new Mob()
-  player.client = this
-  player.Move(TheVoid)
+  def write(s: ByteString) {
+    connection ! Tcp.Write(s)
+  }
 
   def receive: Receive = {
     case Tcp.Received(data: ByteString) =>
@@ -33,4 +30,13 @@ class Client(remote:InetSocketAddress, connection:ActorRef) extends Actor with A
     case s =>
       log.info("Received " + s)
   }
+
+  // Initialization
+  context.watch(connection)
+
+  var player:Mob = new Mob()
+  player.client = this
+  player.Move(TheVoid)
+
+  this.write(ByteString("Hello and welcome."))
 }

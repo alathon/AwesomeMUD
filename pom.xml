@@ -36,6 +36,11 @@
   </pluginRepositories>
 
   <dependencies>
+      <dependency>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-parser-combinators</artifactId>
+          <version>${scala.version}</version>
+      </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>

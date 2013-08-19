@@ -3,13 +3,9 @@ package awesomeware.core
 trait Container {
   var inventory:List[GameEntity] = List()
 
-  def canEnter(obj: GameEntity, from: Container):Boolean = {
-    true
-  }
+  def canEnter(obj: GameEntity, from: Container):Boolean = true
 
-  def canExit(obj: GameEntity, to: Container):Boolean = {
-    true
-  }
+  def canExit(obj: GameEntity, to: Container):Boolean = true
 
   def Entered(obj: GameEntity, from: Container) {
     println(obj + " entered from " + from)
@@ -22,11 +18,11 @@ trait Container {
     println(obj + " exited to " + to)
   }
 
-  def removeEntity[T <% GameEntity](e: T) {
+  def removeEntity[T <: GameEntity](e: T) {
     this.inventory = this.inventory diff List(e)
   }
 
-  def addEntity[T <% GameEntity](e: T) {
+  def addEntity[T <: GameEntity](e: T) {
     this.inventory = e :: this.inventory
   }
 }
