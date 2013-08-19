@@ -10,14 +10,11 @@ trait Container {
   def canExit(obj: GameEntity, to: Container):Boolean = true
 
   def entered(obj: GameEntity, from: Container) {
-    println(obj + " entered from " + from)
-    for (e <- inventory) {
-      println("In inventory: " + e)
-    }
+    
   }
 
   def exited(obj: GameEntity, to: Container) {
-    println(obj + " exited to " + to)
+    
   }
 
   def removeEntity[T <: GameEntity](e: T) {

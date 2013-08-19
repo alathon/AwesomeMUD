@@ -61,5 +61,5 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
   var player:Mob = new Mob()
   player.client = this
   player.move(TheVoid)
-  this.write(ByteString("Hello and welcome."))
+  this.write(ByteString("\n"))
 }
