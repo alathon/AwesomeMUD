@@ -13,10 +13,11 @@ import awesomeware.core.Container
 abstract class GameEntity{
   var location: Container = null
   var client:Client = null
+  var name:String = "Unnamed Entity"
 
-  def receiveText(text: String) {
+  def receiveText(text: String, prompt: Boolean = true, newline: Boolean = true) {
     if(this.client != null) {
-      this.client.receiveText(text)
+      this.client.receiveText(text, prompt, newline)
     }
   }
   
@@ -40,6 +41,6 @@ abstract class GameEntity{
       oldLoc.exited(this, to)
     }
     to.entered(this, oldLoc)
-    true
+    return true
   }
 }

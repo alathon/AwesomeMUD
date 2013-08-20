@@ -26,35 +26,37 @@ case class Failure[+T](msg: String, in:ParseState) extends Result[T] {
 abstract class Command {
 	val components:Seq[CommandComponent[_]]
 	val name:String
-	
+
 	def go(source: GameEntity, args: Seq[Result[_]])
 
-	def parseInput(in: ParseState, source: GameEntity): (Boolean, Seq[Result[_]]) = {
+	def parseInput(in: ParseState, source: GameEntity): CommandResult = {
 	  val out = ArrayBuffer[Result[_]]()
 	  var currentInput = in
+	  var componentsMatched = 0
 	  for (component <- components) {
 	   	  if(currentInput.offset >= currentInput.tokens.length) {
 	   	    if(!component.optional) {
-	   	    	return (false, out)
+	   	    	return CommandFailure(componentsMatched, this, out)
 	   	    } else {
-	   	      return (true, out)
-	   	    }
+	   	      return CommandSuccess(componentsMatched, this, out)
+	   	    }      
 		  }
 	   	  
 		  val res = component.matchInput(currentInput, source)
 		  if(!res.success) {
 		    if(!component.optional) {
-		    	return (false, out)
+		    	return CommandFailure(componentsMatched, this, out)
 		    }
 		  } else {
+		    componentsMatched += 1
 			  if(component.shouldAdd) {
 				  out += res
 			  }
 		  }
-		  
+
 		  currentInput = res.asInstanceOf[Result[_]].input
 
 	  }
-	  return (true, out)
+	  return CommandSuccess(componentsMatched, this, out)
 	}
 }

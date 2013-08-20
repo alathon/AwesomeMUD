@@ -3,24 +3,43 @@ package awesomeware.commands
 import scala.collection.mutable.ArrayBuffer
 import awesomeware.core.entities.GameEntity
 
+abstract class CommandResult(val count: Integer, val command: Command, val output: Seq[Result[_]])
+case class CommandSuccess(override val count: Integer, override val command: Command, override val output: Seq[Result[_]]) extends CommandResult(count,command, output)
+case class CommandFailure(override val count: Integer, override val command: Command, override val output: Seq[Result[_]]) extends CommandResult(count,command, output)
+case class NoCommand() extends CommandResult(0, null, null)
+
 object CommandInterpreter {
-  def interpret(text: String, source: GameEntity, commands: Set[Command]):Boolean = {
+  def interpret(text: String, source: GameEntity, commands: Set[Command]):CommandResult = {
     val tokens = text.split(" ")
     val input = ParseState(text, tokens, 0)
+    var bestEffort:CommandResult = null
     
     for (command <- commands) {
-      if(tryCommand(command, input, source)) return true
+      val res:CommandResult = command.parseInput(input, source)
+      if(bestEffort == null) {
+        if(res.count > 0)
+        	bestEffort = res
+      } else {
+	      bestEffort match {
+	        case c:CommandSuccess =>
+	          if(res.count > bestEffort.count && res.isInstanceOf[CommandSuccess]) {
+	            bestEffort = res
+	          }
+	        case c:CommandFailure =>
+	          if(res.isInstanceOf[CommandSuccess]) {
+	        	  bestEffort = res
+	          } else if(res.count > bestEffort.count) {
+	        	  bestEffort = res
+	          }
+	      }
+      }
     }
-    return false
-  }
-  
-  def tryCommand(command: Command, input: ParseState, source: GameEntity): Boolean = {
-    val (success, output) = command.parseInput(input, source)
-    if(!success) {
-      return false
-    } else {
-    	command.go(source, output)
-    	return true
+    
+    if(bestEffort == null) return NoCommand()
+    
+    if(bestEffort.isInstanceOf[CommandSuccess]) {
+      bestEffort.command.go(source, bestEffort.output)
     }
+    return bestEffort
   }
 }

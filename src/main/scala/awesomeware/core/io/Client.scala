@@ -5,14 +5,11 @@ import java.net.{InetSocketAddress, Socket}
 import akka.util.ByteString
 import akka.io.Tcp
 import awesomeware.core.entities.Mob
-import awesomeware.commands.impl.WhoCommand
-import awesomeware.commands.CommandInterpreter
 import scala.collection.mutable.ArrayBuffer
-import awesomeware.commands.Command
 import awesomeware.content.staticContent._
-import awesomeware.commands.Commander
 import awesomeware.core.entities.GameEntity
-import awesomeware.commands.impl.BasicUtilityCommands
+import awesomeware.commands._
+import awesomeware.commands.impl._
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
@@ -21,12 +18,6 @@ object Client {
 
 class Client(remote:InetSocketAddress, connection:ActorRef) 
 	extends Actor with ActorLogging with Commander {
-  /**
-   * Input and output
-   */
-  def receiveText(str: String) {
-    this.write(ByteString(str))
-  }
 
   def write(s: ByteString) {
     connection ! Tcp.Write(s)
@@ -35,7 +26,7 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
   def receive: Receive = {
     case Tcp.Received(data: ByteString) =>
       val text = data.utf8String.replaceAll("[\r\n]+$", "")
-      this.handleCommand(text)
+      this.handleInput(text)
       log.info("Received {} from remote address {}", text, remote)
     case _: Tcp.ConnectionClosed =>
       log.info("Stopping, because connection for remote address {} closed", remote)
@@ -46,22 +37,42 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
     case s =>
       log.info("Received " + s)
   }
-
-  // Initialization
   context.watch(connection)
   
-  /** Commander */
+  def receiveText(str: String, prompt: Boolean = true, newline: Boolean = true) {
+    if(newline) {
+      this.write(ByteString(str + "\n"))
+    } else {
+    	this.write(ByteString(str))
+    }
+    
+    if(prompt) {
+      if(!newline) this.write(ByteString("\n> "))
+      else this.write(ByteString("> "))
+    }
+  }
+  
   def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
   
-  def handleNoCommand(text: String) {
-    this.receiveText(s"Command not understood: $text")
+  def handleInput(text: String) {
+    if(text.trim() == "") {
+      this.receiveText("")
+      return
+    }
+
+    val res:CommandResult = this.parseCommand(text)
+    res match {
+      case CommandSuccess(_,_,_) =>
+
+      case CommandFailure(_,_,_) =>
+        val name = res.command.name
+        this.receiveText(s"Invalid syntax for command: $name")
+
+      case NoCommand() =>
+        this.receiveText(s"No such command: $text")
+    }
   }
-  
-  def handleInvalidSyntax(text: String, command: Command) {
-    val niceName = command.name
-    this.receiveText(s"Invalid syntax for command $niceName")
-  }
-  
+
   /**
    * Login stuff.
    */
@@ -69,6 +80,6 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
   
   var player:Mob = new Mob()
   player.client = this
+  player.name = "Named"
   player.move(TheVoid)
-  this.write(ByteString("\n"))
 }

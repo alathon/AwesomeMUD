@@ -16,16 +16,16 @@ class RoomExit(cmd:String, fromRoom:Room, toRoom:Room) extends GameEntity{
 
 class Room extends GameEntity with Container{
   var description:String = "An empty room."
-  var name:String = "Unknown Room"
 
   protected var exits: Set[RoomExit] = Set()
   
   def describeTo(to: GameEntity, dType: DescType): String = {
     var b = new StringBuilder()
     
-    b ++= s"Room name: $name\n"
-    b ++= "------\n"
-    b ++= description
+    b ++= s"$name\n"
+    b ++= "-" * name.length() + "\n"
+    b ++= description + "\n"
+    b ++= "-" * name.length() + "\n"
     
     return b.toString
   }
