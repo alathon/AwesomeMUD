@@ -16,7 +16,7 @@ object Search {
     locName.toLowerCase() match {
       case "players" => 
         return Seq[GameEntity]()
-      case "loc" =>
+      case "here" =>
         return source.location.inventory
       case "self" =>
         if(source.isInstanceOf[Container]) {
@@ -60,7 +60,7 @@ object Search {
   }
 }
 
-class Ref(locName: String = "loc", typeName: String = "", optional:Boolean = false) 
+class Ref(typeName: String = "", locName: String = "here", optional:Boolean = false)
 	extends CommandComponent[GameEntity](optional) {
 	def shouldAdd:Boolean = true
 	def matchInput(in: ParseState, source: GameEntity): Result[GameEntity] = {
@@ -74,7 +74,9 @@ class Ref(locName: String = "loc", typeName: String = "", optional:Boolean = fal
 	}
 }
 
-class Anything() extends CommandComponent[String](false) {
+class Anything(optional:Boolean = false) extends CommandComponent[String](optional) {
+  def apply():Anything = new Anything()
+
   def shouldAdd:Boolean = true
 
   def matchInput(in: ParseState, source: GameEntity): Result[String] = {

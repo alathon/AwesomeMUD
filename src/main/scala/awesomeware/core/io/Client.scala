@@ -40,16 +40,16 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
   context.watch(connection)
   
   def receiveText(str: String, prompt: Boolean = true, newline: Boolean = true) {
-    if(newline) {
-      this.write(ByteString(str + "\n"))
-    } else {
-    	this.write(ByteString(str))
-    }
-    
+    val b = new StringBuilder()
+    b ++= str
+    if(newline) b ++= "\r\n"
+
     if(prompt) {
-      if(!newline) this.write(ByteString("\n> "))
-      else this.write(ByteString("> "))
+      if(newline) b ++= "> "
+      else b ++= "\r\n> "
     }
+
+    this.write(ByteString(b.toString()))
   }
   
   def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]

@@ -17,48 +17,53 @@ object BasicUtilityCommands extends CommandGifter {
 sealed class Look extends Command {
   val components = List(new Word("look"))
   val name = "look"
-  
+
   def go(source: GameEntity, args: Seq[Result[_]]) {
-	val loc:Container = source.location
-    source.receiveText("You look around:\n", prompt=false)
-    
+    val loc:Container = source.location
+    val b = new StringBuilder()
+    b ++= "You look around:\n"
     if(loc.isInstanceOf[Room]) {
       val room:Room = loc.asInstanceOf[Room]
-      source.receiveText(room.describeTo(source, DescType.LongDesc))
+      b ++= room.describeTo(source, DescType.LongDesc)
+    }
+    source.receiveText(b.toString())
+  }
+}
+
+  sealed class Tell extends Command {
+    val components = List(new Word("tell"), new Ref("mob","here",optional=true), new Anything(optional=true))
+    val name = "tell"
+
+    def go(source: GameEntity, args: Seq[Result[_]]) {
+      if(args.isEmpty) {
+        source.receiveText("Tell who what?")
+        return
+      }
+
+      val res0 = args(0).getResult
+      if(res0.isInstanceOf[Mob]) {
+        val target:Mob = res0.asInstanceOf[Mob]
+        if(args.length < 2) {
+          source.receiveText(s"Tell ${target.name} what?")
+          return
+        }
+        val data = args(1).getResult
+        source.receiveText(s"You tell ${target.name}, '$data'")
+      } else {
+        source.receiveText("Tell who?")
+      }
     }
   }
-}
 
-sealed class Tell extends Command {
-  val components = List(new Word("tell"), new Ref(locName="loc",typeName="mob",optional=true), new Anything())
-  val name = "tell"
-    
+  sealed class Who extends Command {
+    val components = List(new Word("who"))
+    val name = "who"
+
     def go(source: GameEntity, args: Seq[Result[_]]) {
-	  if(args.isEmpty) {
-	    source.receiveText("Tell who what?")
-	    return
-	  }
-	  
-	  val res0 = args(0).getResult
-	  if(res0.isInstanceOf[Mob]) {
-		  val target:Mob = res0.asInstanceOf[Mob]
-		  val data = args(1).getResult
-		  source.receiveText(s"You tell ${target.name}, '$data'")
-	  } else {
-	    source.receiveText("Tell who?")
-	  }
-  	}
-}
-
-sealed class Who extends Command {
-  val components = List(new Word("who"))
-  val name = "who"
-
-  def go(source: GameEntity, args: Seq[Result[_]]) {
-    val b = new StringBuilder()
-    b ++= "---------------\n"
-    b ++= "(Who goes here)\n"
-    b ++= "---------------\n"
-    source.receiveText(b.toString)
+      val b = new StringBuilder()
+      b ++= "---------------\n"
+      b ++= "(Who goes here)\n"
+      b ++= "---------------\n"
+      source.receiveText(b.toString)
+    }
   }
-}
