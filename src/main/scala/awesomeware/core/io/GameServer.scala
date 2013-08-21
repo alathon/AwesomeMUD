@@ -9,7 +9,7 @@ object GameServer {
     Props(new GameServer(endpoint))
 }
 
-class GameServer(endpoint: InetSocketAddress) extends Actor with ActorLogging{
+class GameServer(endpoint: InetSocketAddress) extends Actor with ActorLogging {
   IO(Tcp)(context.system) ! Tcp.Bind(self, endpoint)
 
   override def receive: Receive = {

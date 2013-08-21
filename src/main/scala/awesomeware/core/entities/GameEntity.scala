@@ -1,4 +1,5 @@
 package awesomeware.core.entities
+
 import awesomeware.core.io.Client
 import awesomeware.core.DescType._
 import awesomeware.core.Container
@@ -10,25 +11,25 @@ import awesomeware.core.Container
  * Leaving will trigger Left() after you've left, and Entered()
  * after you've entered a new Container.
  */
-abstract class GameEntity{
+abstract class GameEntity {
   var location: Container = null
-  var client:Client = null
-  var name:String = "Unnamed Entity"
+  var client: Client = null
+  var name: String = "Unnamed Entity"
 
   def receiveText(text: String, prompt: Boolean = true, newline: Boolean = true) {
-    if(this.client != null) {
+    if (this.client != null) {
       this.client.receiveText(text, prompt, newline)
     }
   }
-  
+
   def describeTo(to: GameEntity, dtype: DescType): String
-  
-  def move(to: Container):Boolean = {
-    if(this.location != null && !this.location.canExit(this, to)) {
+
+  def move(to: Container): Boolean = {
+    if (this.location != null && !this.location.canExit(this, to)) {
       return false
     }
 
-    if(!to.canEnter(this, this.location))  {
+    if (!to.canEnter(this, this.location)) {
       return false
     }
 
@@ -36,7 +37,7 @@ abstract class GameEntity{
     this.location = to
 
     to.addEntity(this)
-    if(oldLoc != null) {
+    if (oldLoc != null) {
       oldLoc.removeEntity(this)
       oldLoc.exited(this, to)
     }

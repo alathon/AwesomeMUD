@@ -3,14 +3,14 @@ package awesomeware.core
 import awesomeware.core.entities.GameEntity
 
 trait Container {
-  var inventory:List[GameEntity] = List()
+  var inventory: List[GameEntity] = List()
 
-  def canEnter(obj: GameEntity, from: Container):Boolean = true
+  def canEnter(obj: GameEntity, from: Container): Boolean = true
 
-  def canExit(obj: GameEntity, to: Container):Boolean = true
+  def canExit(obj: GameEntity, to: Container): Boolean = true
 
   def entered(obj: GameEntity, from: Container) {
-    
+
   }
 
   def exited(obj: GameEntity, to: Container) {

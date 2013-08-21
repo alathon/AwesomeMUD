@@ -1,11 +1,10 @@
 package awesomeware.core.io
 
 import akka.actor._
-import java.net.{InetSocketAddress, Socket}
+import java.net.InetSocketAddress
 import akka.util.ByteString
 import akka.io.Tcp
 import awesomeware.core.entities.Mob
-import scala.collection.mutable.ArrayBuffer
 import awesomeware.content.staticContent._
 import awesomeware.core.entities.GameEntity
 import awesomeware.commands._
@@ -16,8 +15,8 @@ object Client {
     Props(new Client(remote, connection))
 }
 
-class Client(remote:InetSocketAddress, connection:ActorRef) 
-	extends Actor with ActorLogging with Commander {
+class Client(remote: InetSocketAddress, connection: ActorRef)
+  extends Actor with ActorLogging with Commander {
 
   def write(s: ByteString) {
     connection ! Tcp.Write(s)
@@ -37,34 +36,35 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
     case s =>
       log.info("Received " + s)
   }
+
   context.watch(connection)
-  
+
   def receiveText(str: String, prompt: Boolean = true, newline: Boolean = true) {
     val b = new StringBuilder()
     b ++= str
-    if(newline) b ++= "\r\n"
+    if (newline) b ++= "\r\n"
 
-    if(prompt) {
-      if(newline) b ++= "> "
+    if (prompt) {
+      if (newline) b ++= "> "
       else b ++= "\r\n> "
     }
 
     this.write(ByteString(b.toString()))
   }
-  
+
   def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
-  
+
   def handleInput(text: String) {
-    if(text.trim() == "") {
+    if (text.trim() == "") {
       this.receiveText("")
       return
     }
 
-    val res:CommandResult = this.parseCommand(text)
+    val res: CommandResult = this.parseCommand(text)
     res match {
-      case CommandSuccess(_,_,_) =>
+      case CommandSuccess(_, _, _) =>
 
-      case CommandFailure(_,_,_) =>
+      case CommandFailure(_, _, _) =>
         val name = res.command.name
         this.receiveText(s"Invalid syntax for command: $name")
 
@@ -77,8 +77,8 @@ class Client(remote:InetSocketAddress, connection:ActorRef)
    * Login stuff.
    */
   BasicUtilityCommands.giveAll(this)
-  
-  var player:Mob = new Mob()
+
+  var player: Mob = new Mob()
   player.client = this
   player.name = "Named"
   player.move(TheVoid)
