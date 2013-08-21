@@ -3,9 +3,9 @@ package awesomeware.commands
 import scala.collection.mutable.ArrayBuffer
 import awesomeware.core.entities.GameEntity
 
-abstract class CommandResult(val count: Integer, val command: Command, val output: Seq[Result[_]])
-case class CommandSuccess(override val count: Integer, override val command: Command, override val output: Seq[Result[_]]) extends CommandResult(count,command, output)
-case class CommandFailure(override val count: Integer, override val command: Command, override val output: Seq[Result[_]]) extends CommandResult(count,command, output)
+abstract class CommandResult(val count: Integer, val command: Command, val output: Seq[Any])
+case class CommandSuccess(override val count: Integer, override val command: Command, override val output: Seq[Any]) extends CommandResult(count,command, output)
+case class CommandFailure(override val count: Integer, override val command: Command, override val output: Seq[Any]) extends CommandResult(count,command, output)
 case class NoCommand() extends CommandResult(0, null, null)
 
 object CommandInterpreter {

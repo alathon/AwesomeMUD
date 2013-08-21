@@ -27,10 +27,10 @@ abstract class Command {
   val components:Seq[CommandComponent[_]]
   val name:String
 
-  def go(source: GameEntity, args: Seq[Result[_]])
+  def go(source: GameEntity, args: Seq[Any])
 
   def parseInput(in: ParseState, source: GameEntity): CommandResult = {
-    val out = ArrayBuffer[Result[_]]()
+    val out = ArrayBuffer[Any]()
     var currentInput = in
     var componentsMatched = 0
     for (component <- components) {
@@ -47,7 +47,7 @@ abstract class Command {
         } else {
           componentsMatched += 1
           if(component.shouldAdd) {
-            out += res
+            out += res.getResult
           }
         }
         currentInput = res.asInstanceOf[Result[_]].input

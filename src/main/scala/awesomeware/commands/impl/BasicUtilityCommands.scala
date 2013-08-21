@@ -18,7 +18,7 @@ sealed class Look extends Command {
   val components = List(new Word("look"))
   val name = "look"
 
-  def go(source: GameEntity, args: Seq[Result[_]]) {
+  def go(source: GameEntity, args: Seq[Any]) {
     val loc:Container = source.location
     val b = new StringBuilder()
     b ++= "You look around:\n"
@@ -34,20 +34,20 @@ sealed class Look extends Command {
     val components = List(new Word("tell"), new Ref("mob","here",optional=true), new Anything(optional=true))
     val name = "tell"
 
-    def go(source: GameEntity, args: Seq[Result[_]]) {
+    def go(source: GameEntity, args: Seq[Any]) {
       if(args.isEmpty) {
         source.receiveText("Tell who what?")
         return
       }
 
-      val res0 = args(0).getResult
+      val res0 = args(0)
       if(res0.isInstanceOf[Mob]) {
         val target:Mob = res0.asInstanceOf[Mob]
         if(args.length < 2) {
           source.receiveText(s"Tell ${target.name} what?")
           return
         }
-        val data = args(1).getResult
+        val data = args(1)
         source.receiveText(s"You tell ${target.name}, '$data'")
       } else {
         source.receiveText("Tell who?")
@@ -59,7 +59,7 @@ sealed class Look extends Command {
     val components = List(new Word("who"))
     val name = "who"
 
-    def go(source: GameEntity, args: Seq[Result[_]]) {
+    def go(source: GameEntity, args: Seq[Any]) {
       val b = new StringBuilder()
       b ++= "---------------\n"
       b ++= "(Who goes here)\n"
