@@ -30,7 +30,7 @@ case class ParseFailure(override val count: Integer, override val command: Comma
 case class NoCommand() extends CommandResult(0, null, null)
 
 object CommandInterpreter {
-  def interpret(text: String, source: GameEntity, commands: Set[Command]): CommandResult = {
+  def interpret[T >: CommandResult](text: String, source: GameEntity, commands: Set[Command]): T = {
     val tokens = text.split(" ")
     val input = ParseState(text, tokens, 0)
     val orderedCommands: List[CommandResult] = commands.map(x => x.parseInput(input, source)).toList.sorted
@@ -47,42 +47,5 @@ object CommandInterpreter {
             best
         }
     }
-
-    /*
-    best.count match {
-      case 0 =>
-        NoCommand()
-      case _ =>
-        best.command.go(source, best.output)
-        best
-    } */
-    /*
-for (command <- commands) {
-val res: CommandResult = command.parseInput(input, source)
-if (bestEffort == null) {
-if (res.count > 0)
-bestEffort = res
-} else {
-bestEffort match {
-case c: CommandSuccess =>
-if (res.count > bestEffort.count && res.isInstanceOf[CommandSuccess]) {
-bestEffort = res
-}
-case c: CommandFailure =>
-if (res.isInstanceOf[CommandSuccess]) {
-bestEffort = res
-} else if (res.count > bestEffort.count) {
-bestEffort = res
-}
-}
-}
-}
-
-if (bestEffort == null) return NoCommand()
-
-if (bestEffort.isInstanceOf[CommandSuccess]) {
-bestEffort.command.go(source, bestEffort.output)
-}
-return bestEffort */
   }
 }

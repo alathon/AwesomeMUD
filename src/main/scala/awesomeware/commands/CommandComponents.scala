@@ -105,10 +105,6 @@ object Word {
 class Word(word: Option[String], optional: Boolean = false, addToOutput: Boolean = false, short: Boolean = false)
   extends CommandComponent[String](optional) {
 
-  def this(word: Option[String]) = this(word, false, false, false)
-
-  def this() = this(None, false, false, false)
-
   def shouldAdd: Boolean = addToOutput
 
   override def toString: String = s"Word: $word Optional: $optional Force:$addToOutput Short:$short"

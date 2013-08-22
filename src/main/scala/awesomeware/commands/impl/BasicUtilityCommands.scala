@@ -14,7 +14,7 @@ object BasicUtilityCommands extends CommandGifter {
 }
 
 sealed class Look extends Command {
-  val components = List(Word(Some("look")))
+  val components = List(Word("look"))
   val name = "look"
 
   def go(source: GameEntity, args: Seq[Any]) {
@@ -31,7 +31,7 @@ sealed class Look extends Command {
 }
 
 sealed class Tell extends Command {
-  val components = List(Word(Some("tell")), Ref(Some("mob"), "here", optional = true), Anything(optional = true))
+  val components = List(Word("tell"), Ref("mob", "here", optional = true), Anything(optional = true))
   val name = "tell"
 
   def go(source: GameEntity, args: Seq[Any]) {
@@ -54,7 +54,7 @@ sealed class Tell extends Command {
 }
 
 sealed class Who extends Command {
-  val components = List(Word(Some("who")))
+  val components = List(Word("who"))
   val name = "who"
 
   def go(source: GameEntity, args: Seq[Any]) {

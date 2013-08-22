@@ -33,6 +33,13 @@ abstract class Command {
   val components: Seq[CommandComponent[_]]
   val name: String
 
+  implicit def string2option(s: String): Option[String] = {
+    s match {
+      case "" => None
+      case _ => Some(s)
+    }
+  }
+
   def go(source: GameEntity, args: Seq[Any])
 
   def parseInput(in: ParseState, source: GameEntity): CommandResult = {
