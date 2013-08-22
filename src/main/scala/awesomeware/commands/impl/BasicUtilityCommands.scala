@@ -14,23 +14,24 @@ object BasicUtilityCommands extends CommandGifter {
 }
 
 sealed class Look extends Command {
-  val components = List(new Word(Some("look")))
+  val components = List(Word(Some("look")))
   val name = "look"
 
   def go(source: GameEntity, args: Seq[Any]) {
     val loc: Container = source.location
     val b = new StringBuilder()
     b ++= "You look around:\n"
-    if (loc.isInstanceOf[Room]) {
-      val room: Room = loc.asInstanceOf[Room]
-      b ++= room.describeTo(source, DescType.LongDesc)
+    loc match {
+      case room: Room =>
+        b ++= room.describeTo(source, DescType.LongDesc)
+      case _ =>
     }
     source.receiveText(b.toString())
   }
 }
 
 sealed class Tell extends Command {
-  val components = List(new Word(Some("tell")), new Ref(Some("mob"), "here", optional = true), new Anything(optional = true))
+  val components = List(Word(Some("tell")), Ref(Some("mob"), "here", optional = true), Anything(optional = true))
   val name = "tell"
 
   def go(source: GameEntity, args: Seq[Any]) {
@@ -40,22 +41,22 @@ sealed class Tell extends Command {
     }
 
     val res0 = args(0)
-    if (res0.isInstanceOf[Mob]) {
-      val target: Mob = res0.asInstanceOf[Mob]
-      if (args.length < 2) {
-        source.receiveText(s"Tell ${target.name} what?")
-        return
-      }
-      val data = args(1)
-      source.receiveText(s"You tell ${target.name}, '$data'")
-    } else {
-      source.receiveText("Tell who?")
+    res0 match {
+      case target: Mob =>
+        if (args.length < 2) {
+          source.receiveText(s"Tell ${target.name} what?")
+          return
+        }
+        val data = args(1)
+        source.receiveText(s"You tell ${target.name}, '$data'")
+      case _ =>
+        source.receiveText("Tell who?")
     }
   }
 }
 
 sealed class Who extends Command {
-  val components = List(new Word(Some("who")))
+  val components = List(Word(Some("who")))
   val name = "who"
 
   def go(source: GameEntity, args: Seq[Any]) {
@@ -63,6 +64,6 @@ sealed class Who extends Command {
     b ++= "---------------\r\n"
     b ++= "(Who goes here)\r\n"
     b ++= "---------------\r\n"
-    source.receiveText(b.toString)
+    source.receiveText(b.toString())
   }
 }
