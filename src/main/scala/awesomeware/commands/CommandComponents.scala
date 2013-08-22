@@ -123,6 +123,12 @@ class Word(word: Option[String], optional: Boolean = false, addToOutput: Boolean
   }
 }
 
+object Number {
+  def apply(optional: Boolean = false) {
+    new Number(optional)
+  }
+}
+
 class Number(optional: Boolean = false)
   extends CommandComponent[Integer](optional) {
 
@@ -137,14 +143,20 @@ class Number(optional: Boolean = false)
   }
 }
 
-class Or[T](components: Seq[CommandComponent[T]], opt: Boolean = false)
-  extends CommandComponent[T](opt) {
-  def this(components: Seq[CommandComponent[T]]) = this(components, false)
+object Or {
+  def apply[T](components: Seq[CommandComponent[T]], optional: Boolean = false) {
+    new Or[T](components, optional)
+  }
+}
+
+class Or[T](components: Seq[CommandComponent[T]], optional: Boolean = false)
+  extends CommandComponent[T](optional) {
 
   def shouldAdd: Boolean = components.exists(_.shouldAdd)
 
   def matchInput(in: ParseState, source: GameEntity): Result[T] = {
-    components.forall(x => x.matchInput(in, source).success)
+    // TODO: Turn this into a more functional equivalent using a Collection iterator or something.
+    // Problem is finding one that early terminates!
     for (comp <- components) {
       val res = comp.matchInput(in, source)
       if (res.success) {

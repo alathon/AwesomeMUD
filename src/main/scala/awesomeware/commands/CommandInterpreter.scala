@@ -8,7 +8,7 @@ abstract class CommandResult(val count: Integer, val command: Command, val outpu
       case c: ParseSuccess =>
         that match {
           case c2: ParseSuccess =>
-            that.count.compareTo(this.count)
+            -that.count.compareTo(-this.count)
           case c2: ParseFailure =>
             -1
         }
@@ -17,7 +17,7 @@ abstract class CommandResult(val count: Integer, val command: Command, val outpu
           case c2: ParseSuccess =>
             1
           case c2: ParseFailure =>
-            that.count.compareTo(this.count)
+            -that.count.compareTo(-this.count)
         }
     }
   }
