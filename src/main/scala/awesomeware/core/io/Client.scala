@@ -55,21 +55,18 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
 
   def handleInput(text: String) {
-    if (text.trim() == "") {
-      this.receiveText("")
-      return
-    }
-
-    val res: CommandResult = this.parseCommand(text)
-    res match {
-      case CommandSuccess(_, _, _) =>
-
-      case CommandFailure(_, _, _) =>
-        val name = res.command.name
-        this.receiveText(s"Invalid syntax for command: $name")
-
-      case NoCommand() =>
-        this.receiveText(s"No such command: $text")
+    text.trim() match {
+      case "" =>
+        receiveText("")
+      case _ =>
+        parseCommand(text) match {
+          case ParseSuccess(_, cmd, out) =>
+            cmd.go(this.player, out)
+          case ParseFailure(_, cmd, _) =>
+            this.receiveText(s"Invalid syntax for command: ${cmd.name}")
+          case NoCommand() =>
+            this.receiveText(s"No such command: $text")
+        }
     }
   }
 

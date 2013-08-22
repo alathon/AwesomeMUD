@@ -42,13 +42,13 @@ abstract class Command {
     for (component <- components) {
       if (currentInput.offset >= currentInput.tokens.length) {
         if (!component.optional) {
-          return CommandFailure(componentsMatched, this, out)
+          return ParseFailure(componentsMatched, this, out)
         }
       } else {
         val res = component.matchInput(currentInput, source)
         if (!res.success) {
           if (!component.optional) {
-            return CommandFailure(componentsMatched, this, out)
+            return ParseFailure(componentsMatched, this, out)
           }
         } else {
           componentsMatched += 1
@@ -60,6 +60,6 @@ abstract class Command {
       }
     }
 
-    return CommandSuccess(componentsMatched, this, out)
+    ParseSuccess(componentsMatched, this, out)
   }
 }

@@ -40,15 +40,13 @@ sealed class Tell extends Command {
       return
     }
 
-    val res0 = args(0)
-    res0 match {
+    args(0) match {
       case target: Mob =>
         if (args.length < 2) {
           source.receiveText(s"Tell ${target.name} what?")
-          return
+        } else {
+          source.receiveText(s"You tell ${target.name}, '${args(1)}'")
         }
-        val data = args(1)
-        source.receiveText(s"You tell ${target.name}, '$data'")
       case _ =>
         source.receiveText("Tell who?")
     }

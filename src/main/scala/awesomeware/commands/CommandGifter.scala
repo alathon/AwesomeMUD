@@ -1,7 +1,7 @@
 package awesomeware.commands
 
 /**
- * Utility class to make giving commands as 'sets' easier.
+ * Utility trait to make giving commands as 'sets' easier.
  */
 
 trait CommandGifter {
