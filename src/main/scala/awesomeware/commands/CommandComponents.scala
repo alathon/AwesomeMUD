@@ -124,7 +124,7 @@ class Word(word: Option[String], optional: Boolean = false, addToOutput: Boolean
 }
 
 object Number {
-  def apply(optional: Boolean = false) {
+  def apply(optional: Boolean = false): Number = {
     new Number(optional)
   }
 }
@@ -144,7 +144,7 @@ class Number(optional: Boolean = false)
 }
 
 object Or {
-  def apply[T](components: Seq[CommandComponent[T]], optional: Boolean = false) {
+  def apply[T](components: Seq[CommandComponent[T]], optional: Boolean = false): Or[T] = {
     new Or[T](components, optional)
   }
 }
