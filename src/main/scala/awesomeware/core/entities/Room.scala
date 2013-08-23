@@ -3,27 +3,55 @@ package awesomeware.core.entities
 import awesomeware.core.DescType._
 import awesomeware.core.Container
 import awesomeware.core.DescType
+import scala.Predef._
+import scala.Some
 
-class RoomExit(cmd: String, fromRoom: Room, toRoom: Room) extends GameEntity {
-  var command: String = _
-  var from: Room = fromRoom
-  var to: Room = toRoom
+case class RoomExit(from: Room, to: Container)
 
-  def describeTo(to: GameEntity, dType: DescType): String = {
-    return "A room exit."
-  }
+class ContainerExit(val names: Set[String], val from: Container, val to: Container) {
+
 }
 
 class Room extends GameEntity with Container {
   var description: String = "An empty room."
 
-  protected var exits: Set[RoomExit] = Set()
+  protected var exits: Set[ContainerExit] = Set()
+
+  def getAllExits(): Set[String] = {
+    exits.flatMap(x => x.names)
+  }
+
+  def getExit(name: String): Option[ContainerExit] = {
+    val lowerName = name.toLowerCase
+    val valid: Set[ContainerExit] = exits.filter({
+      exit => exit.names.contains(lowerName)
+    })
+    valid.size match {
+      case 0 => None
+      case _ => Some(valid.head)
+    }
+  }
 
   def describeTo(to: GameEntity, dType: DescType): String = {
     var b = new StringBuilder()
 
     b ++= s"$name\n"
     b ++= "-" * name.length() + "\n"
+    b ++= "Exits: "
+
+    exits.size match {
+      case 0 =>
+        b ++= "None\n"
+      case _ =>
+        for (exit <- exits) {
+          val properName = exit.names.head(0).toUpper + exit.names.head.substring(1)
+          b ++= properName
+          b ++= ","
+        }
+        b.deleteCharAt(b.length - 1) // Remove last ","
+        b ++= "\n"
+    }
+
     b ++= description + "\n"
     b ++= "-" * name.length() + "\n"
 

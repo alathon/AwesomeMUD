@@ -144,12 +144,17 @@ class Number(optional: Boolean = false)
 }
 
 object Or {
-  def apply[T](components: Seq[CommandComponent[T]], optional: Boolean = false): Or[T] = {
-    new Or[T](components, optional)
+  def apply[T](components: CommandComponent[T]*): Or[T] = {
+    new Or[T](false, components)
+  }
+
+
+  def apply[T](optional: Boolean, components: CommandComponent[T]*): Or[T] = {
+    new Or[T](optional, components)
   }
 }
 
-class Or[T](components: Seq[CommandComponent[T]], optional: Boolean = false)
+class Or[T](optional: Boolean = false, components: Seq[CommandComponent[T]])
   extends CommandComponent[T](optional) {
 
   def shouldAdd: Boolean = components.exists(_.shouldAdd)

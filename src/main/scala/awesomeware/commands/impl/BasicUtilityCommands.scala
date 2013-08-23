@@ -8,23 +8,25 @@ import awesomeware.core.DescType
 import awesomeware.core.entities.Mob
 
 object BasicUtilityCommands extends CommandGifter {
-  val commands = Set[Command](new Who(), new Tell(), new Look())
+  val commands = Set[Command](new Who(), new Tell(), new Look(),
+    new North(), new South(), new East(), new West())
 
   def isEligable(cmd: Command, commander: Commander): Boolean = true
 }
 
 sealed class Look extends Command {
-  val components = List(Word("look"))
+  val components = List(Or(Word("look"), Word("l")))
   val name = "look"
 
   def go(source: GameEntity, args: Seq[Any]) {
     val loc: Container = source.location
     val b = new StringBuilder()
-    b ++= "You look around:\n"
+    b ++= "You look around:\n\n"
     loc match {
       case room: Room =>
         b ++= room.describeTo(source, DescType.LongDesc)
       case _ =>
+        b ++= "You see nothing at all! Oh no!"
     }
     source.receiveText(b.toString())
   }
@@ -63,5 +65,57 @@ sealed class Who extends Command {
     b ++= "(Who goes here)\r\n"
     b ++= "---------------\r\n"
     source.receiveText(b.toString())
+  }
+}
+
+sealed class North extends Command {
+  val components = List(Or(Word("north"), Word("n")))
+  val name = "north"
+
+  def go(source: GameEntity, args: Seq[Any]) {
+    source match {
+      case m: Mob =>
+        m.attemptMove("north")
+      case _ =>
+    }
+  }
+}
+
+sealed class South extends Command {
+  val components = List(Or(Word("south"), Word("s")))
+  val name = "south"
+
+  def go(source: GameEntity, args: Seq[Any]) {
+    source match {
+      case m: Mob =>
+        m.attemptMove("south")
+      case _ =>
+    }
+  }
+}
+
+sealed class East extends Command {
+  val components = List(Or(Word("east"), Word("e")))
+  val name = "east"
+
+  def go(source: GameEntity, args: Seq[Any]) {
+    source match {
+      case m: Mob =>
+        m.attemptMove("east")
+      case _ =>
+    }
+  }
+}
+
+sealed class West extends Command {
+  val components = List(Or(Word("west"), Word("w")))
+  val name = "west"
+
+  def go(source: GameEntity, args: Seq[Any]) {
+    source match {
+      case m: Mob =>
+        m.attemptMove("west")
+      case _ =>
+    }
   }
 }
