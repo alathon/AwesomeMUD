@@ -17,7 +17,6 @@ object Color {
     'x' -> "\033[2J" // Clear
   )
 
-
   def colorize(str: String, keep: Boolean = true): String = {
     val b = new StringBuilder()
     var colorMode: Boolean = false
