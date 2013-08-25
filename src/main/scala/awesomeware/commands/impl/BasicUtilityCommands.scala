@@ -9,7 +9,8 @@ import awesomeware.core.entities.Mob
 
 object BasicUtilityCommands extends CommandGifter {
   val commands = Set[Command](new Who(), new Tell(), new Look(),
-    new North(), new South(), new East(), new West())
+    new North(), new South(), new East(), new West(),
+    new Say())
 
   def isEligable(cmd: Command, commander: Commander): Boolean = true
 }
@@ -117,5 +118,22 @@ sealed class West extends Command {
         m.attemptMove("west")
       case _ =>
     }
+  }
+}
+
+sealed class Say extends Command {
+  val components = List(Or(Word("say"), Word("'")), Anything(optional = true))
+  val name = "say"
+
+  def go(source: GameEntity, args: Seq[Any]) {
+    if (args.length == 0) {
+      source.receiveText("Say what??")
+      return
+    }
+
+    for (entity <- (source.location.inventory diff List(source))) {
+      entity.receiveText(s"${source.name} says, '${args(0)}#n'")
+    }
+    source.receiveText(s"You say, '${args(0)}#n'")
   }
 }

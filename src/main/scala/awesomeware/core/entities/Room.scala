@@ -9,7 +9,7 @@ import scala.Some
 case class RoomExit(from: Room, to: Container)
 
 class ContainerExit(val names: Set[String], val from: Container, val to: Container) {
-
+  override def toString: String = names.head(0).toUpper + names.head.substring(1)
 }
 
 class Room extends GameEntity with Container {
@@ -43,12 +43,7 @@ class Room extends GameEntity with Container {
       case 0 =>
         b ++= "None\n"
       case _ =>
-        for (exit <- exits) {
-          val properName = exit.names.head(0).toUpper + exit.names.head.substring(1)
-          b ++= properName
-          b ++= ","
-        }
-        b.deleteCharAt(b.length - 1) // Remove last ","
+        b ++= exits.mkString(", ")
         b ++= "\n"
     }
 

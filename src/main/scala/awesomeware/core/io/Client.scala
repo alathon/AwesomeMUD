@@ -39,7 +39,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
 
   context.watch(connection)
 
-  def receiveText(str: String, prompt: Boolean = true, newline: Boolean = true) {
+  def receiveText(str: String, prompt: Boolean = true, color: Boolean = true, newline: Boolean = true) {
     val b = new StringBuilder()
     b ++= str
     if (newline) b ++= "\r\n"
@@ -49,7 +49,12 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
       else b ++= "\r\n> "
     }
 
-    this.write(ByteString(b.toString()))
+    // Prevent any kind of color bleeding.
+
+    if (color)
+      this.write(ByteString(Color.colorize(b.toString())))
+    else
+      this.write(ByteString(Color.colorize(b.toString(), false)))
   }
 
   def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
@@ -76,7 +81,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   BasicUtilityCommands.giveAll(this)
 
   var player: Mob = new Mob()
-  player.client = this
+  player.client = Some(this)
   player.name = "Named"
   player.move(TheVoid)
 }

@@ -13,12 +13,14 @@ import awesomeware.core.Container
  */
 abstract class GameEntity {
   var location: Container = null
-  var client: Client = null
+  var client: Option[Client] = None
   var name: String = "Unnamed Entity"
 
   def receiveText(text: String, prompt: Boolean = true, newline: Boolean = true) {
-    if (this.client != null) {
-      this.client.receiveText(text, prompt, newline)
+    client match {
+      case Some(c: Client) =>
+        c.receiveText(text, prompt, newline)
+      case None =>
     }
   }
 
