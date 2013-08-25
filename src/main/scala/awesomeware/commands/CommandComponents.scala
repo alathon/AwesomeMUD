@@ -158,14 +158,11 @@ class Or[T](optional: Boolean = false, components: Seq[CommandComponent[T]])
   def shouldAdd: Boolean = components.exists(_.shouldAdd)
 
   def matchInput(in: ParseState, source: GameEntity): Result[T] = {
-    // TODO: Turn this into a more functional equivalent using a Collection iterator or something.
-    // Problem is finding one that early terminates!
-    for (comp <- components) {
-      val res = comp.matchInput(in, source)
-      if (res.success) {
-        return res
-      }
+    components.view map {
+      x => x.matchInput(in, source)
+    } find (_.success) match {
+      case Some(r) => r
+      case None => Failure("Failed to match", in)
     }
-    Failure("No match for Or", in)
   }
 }

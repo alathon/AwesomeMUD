@@ -30,17 +30,22 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
       log.info("Received {} from remote address {}", text, remote)
     case _: Tcp.ConnectionClosed =>
       log.info("Stopping, because connection for remote address {} closed", remote)
-      World.clients -= Client.this
+      removeFromGame()
       context.stop(self)
     case Terminated(`connection`) =>
       log.info("Stopping, because connection for remote address {} died", remote)
-      World.clients -= Client.this
+      removeFromGame()
       context.stop(self)
     case s =>
       log.info("Received " + s)
   }
 
   context.watch(connection)
+
+  def removeFromGame() {
+    World.clients -= Client.this
+    player = null
+  }
 
   def receiveText(str: String, prompt: Boolean = true, color: Boolean = true, newline: Boolean = true) {
     val b = new StringBuilder()
