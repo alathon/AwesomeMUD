@@ -9,6 +9,7 @@ import awesomeware.content.staticContent._
 import awesomeware.core.entities.GameEntity
 import awesomeware.commands._
 import awesomeware.commands.impl._
+import awesomeware.core.World
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
@@ -29,9 +30,11 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
       log.info("Received {} from remote address {}", text, remote)
     case _: Tcp.ConnectionClosed =>
       log.info("Stopping, because connection for remote address {} closed", remote)
+      World.clients -= Client.this
       context.stop(self)
     case Terminated(`connection`) =>
       log.info("Stopping, because connection for remote address {} died", remote)
+      World.clients -= Client.this
       context.stop(self)
     case s =>
       log.info("Received " + s)
@@ -78,6 +81,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   /**
    * Login stuff.
    */
+  World.clients += Client.this
   BasicUtilityCommands.giveAll(this)
 
   var player: Mob = new Mob()

@@ -2,9 +2,8 @@ package awesomeware.commands.impl
 
 import awesomeware.core.entities.GameEntity
 import awesomeware.commands._
-import awesomeware.core.Container
+import awesomeware.core.{World, Container, DescType}
 import awesomeware.core.entities.Room
-import awesomeware.core.DescType
 import awesomeware.core.entities.Mob
 
 object BasicUtilityCommands extends CommandGifter {
@@ -63,7 +62,11 @@ sealed class Who extends Command {
   def go(source: GameEntity, args: Seq[Any]) {
     val b = new StringBuilder()
     b ++= "---------------\r\n"
-    b ++= "(Who goes here)\r\n"
+    World.clients.foreach(c => b ++= c.player.name + "\n")
+    b ++= "---------------\r\n"
+    b ++= "Players online: "
+    b ++= World.clients.size.toString
+    b ++= "\n"
     b ++= "---------------\r\n"
     source.receiveText(b.toString())
   }

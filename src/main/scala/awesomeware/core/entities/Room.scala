@@ -36,7 +36,6 @@ class Room extends GameEntity with Container {
     var b = new StringBuilder()
 
     b ++= s"$name\n"
-    b ++= "-" * name.length() + "\n"
     b ++= "Exits: "
 
     exits.size match {
@@ -46,6 +45,8 @@ class Room extends GameEntity with Container {
         b ++= exits.mkString(", ")
         b ++= "\n"
     }
+    b ++= "-" * name.length() + "\n"
+
 
     b ++= description + "\n"
     b ++= "-" * name.length() + "\n"

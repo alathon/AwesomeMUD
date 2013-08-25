@@ -1,9 +1,7 @@
 package awesomeware.commands
 
-import awesomeware.core.Container
-import awesomeware.core.entities.GameEntity
-import awesomeware.core.entities.Mob
-import awesomeware.core.entities.Room
+import awesomeware.core.{World, Container}
+import awesomeware.core.entities.{GameEntity, Mob, Room}
 
 abstract class CommandComponent[T](val optional: Boolean = false) {
   def shouldAdd: Boolean
@@ -12,10 +10,10 @@ abstract class CommandComponent[T](val optional: Boolean = false) {
 }
 
 object Search {
-  private def getEntitiesInLocation(locName: String, source: GameEntity): Seq[GameEntity] = {
+  private def getEntitiesInLocation[T >: GameEntity](locName: String, source: GameEntity): Seq[T] = {
     locName.toLowerCase match {
       case "players" =>
-        Seq[GameEntity]()
+        World.clients.map(x => x.player).toList
       case "here" =>
         source.location.inventory
       case "self" =>
@@ -54,7 +52,7 @@ object Search {
 
   def find(source: GameEntity, name: String, typeName: Option[String], locName: String): Option[GameEntity] = {
     val (newName, number) = this.splitByNumber(name)
-    val entities: Seq[GameEntity] = this.getEntitiesInLocation(locName, source).filter(x => isType(x, typeName))
+    val entities: Seq[GameEntity] = this.getEntitiesInLocation(locName, source).filter(x => isType(x, typeName) && x.name == newName)
 
     if (entities.isEmpty || number > entities.length - 1) {
       None
