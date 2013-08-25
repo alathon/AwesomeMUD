@@ -15,6 +15,7 @@ abstract class GameEntity {
   var location: Container = null
   var client: Option[Client] = None
   var name: String = "Unnamed Entity"
+  var direction: String = "nowhere"
 
   def receiveText(text: String, prompt: Boolean = true, newline: Boolean = true) {
     client match {
@@ -26,7 +27,7 @@ abstract class GameEntity {
 
   def describeTo(to: GameEntity, dtype: DescType): String
 
-  def move(to: Container): Boolean = {
+  def move(to: Container, dir: Option[String]): Boolean = {
     if (this.location != null && !this.location.canExit(this, to)) {
       return false
     }
@@ -35,15 +36,21 @@ abstract class GameEntity {
       return false
     }
 
+    dir match {
+      case Some(d) => this.direction = d
+      case None =>
+    }
+
     val oldLoc = this.location
     this.location = to
-
     to.addEntity(this)
     if (oldLoc != null) {
       oldLoc.removeEntity(this)
       oldLoc.exited(this, to)
     }
     to.entered(this, oldLoc)
-    return true
+    true
   }
+
+  override def toString: String = this.name
 }

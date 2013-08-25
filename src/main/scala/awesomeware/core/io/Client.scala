@@ -83,5 +83,5 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   var player: Mob = new Mob()
   player.client = Some(this)
   player.name = "Named"
-  player.move(TheVoid)
+  player.move(TheVoid, None)
 }

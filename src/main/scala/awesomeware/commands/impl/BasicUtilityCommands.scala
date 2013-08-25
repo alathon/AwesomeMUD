@@ -76,7 +76,7 @@ sealed class North extends Command {
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
-        m.attemptMove("north")
+        m.attemptMove("north", Some("the north"))
       case _ =>
     }
   }
@@ -89,7 +89,7 @@ sealed class South extends Command {
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
-        m.attemptMove("south")
+        m.attemptMove("south", Some("the south"))
       case _ =>
     }
   }
@@ -102,7 +102,7 @@ sealed class East extends Command {
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
-        m.attemptMove("east")
+        m.attemptMove("east", Some("the east"))
       case _ =>
     }
   }
@@ -115,7 +115,7 @@ sealed class West extends Command {
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
-        m.attemptMove("west")
+        m.attemptMove("west", Some("the west"))
       case _ =>
     }
   }

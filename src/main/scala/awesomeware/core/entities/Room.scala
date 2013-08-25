@@ -17,7 +17,7 @@ class Room extends GameEntity with Container {
 
   protected var exits: Set[ContainerExit] = Set()
 
-  def getAllExits(): Set[String] = {
+  def getAllExits: Set[String] = {
     exits.flatMap(x => x.names)
   }
 
@@ -50,19 +50,19 @@ class Room extends GameEntity with Container {
     b ++= description + "\n"
     b ++= "-" * name.length() + "\n"
 
-    return b.toString
+    b.toString()
   }
 
   override def entered(obj: GameEntity, from: Container) {
-    for (e <- (inventory diff List(obj))) {
-      e.receiveText(s"$obj entered from $from")
+    for (e <- inventory diff List(obj)) {
+      e.receiveText(s"${obj.describeTo(e, DescType.Name)} arrives from ${obj.direction}.")
     }
     obj.receiveText(this.describeTo(obj, DescType.LongDesc))
   }
 
   override def exited(obj: GameEntity, to: Container) {
     for (e <- inventory) {
-      e.receiveText(s"$obj left towards $to")
+      e.receiveText(s"${obj.describeTo(e, DescType.Name)} leaves towards ${obj.direction}.")
     }
   }
 }
