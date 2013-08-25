@@ -1,7 +1,7 @@
-package awesomeware.core
+package com.awesomeware.core
 
 import scala.collection.mutable
-import awesomeware.core.io.Client
+import com.awesomeware.core.io.Client
 
 object World {
   val clients = new mutable.HashSet[Client] with mutable.SynchronizedSet[Client]

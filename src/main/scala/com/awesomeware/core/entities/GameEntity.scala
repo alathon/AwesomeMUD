@@ -1,8 +1,8 @@
-package awesomeware.core.entities
+package com.awesomeware.core.entities
 
-import awesomeware.core.io.Client
-import awesomeware.core.DescType._
-import awesomeware.core.Container
+import com.awesomeware.core.io.Client
+import com.awesomeware.core.Container
+import com.awesomeware.core.DescType._
 
 /**
  * Base class for all entities in the game world.

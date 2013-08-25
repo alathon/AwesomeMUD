@@ -1,13 +1,13 @@
-package awesomeware.commands
+package com.awesomeware.commands
 
-import awesomeware.core.entities.GameEntity
+import com.awesomeware.core.entities.GameEntity
 
 trait Commander {
   def parseCommand(text: String): CommandResult = {
-    return CommandInterpreter.interpret(text, this.getCommandSource(), this.commands)
+    CommandInterpreter.interpret(text, this.getCommandSource, this.commands)
   }
 
-  def getCommandSource[S <: GameEntity](): S
+  def getCommandSource[S <: GameEntity]: S
 
   var commands = Set[Command]()
 

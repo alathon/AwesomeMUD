@@ -1,6 +1,7 @@
-package awesomeware.core
+package com.awesomeware.core
 
-import awesomeware.core.entities.GameEntity
+import com.awesomeware.core.entities.GameEntity
+
 
 trait Container {
   var inventory: List[GameEntity] = List()

@@ -1,7 +1,7 @@
-package awesomeware.commands
+package com.awesomeware.commands
 
 import scala.collection.mutable.ArrayBuffer
-import awesomeware.core.entities.GameEntity
+import com.awesomeware.core.entities.GameEntity
 
 case class ParseState(text: String, tokens: Seq[String], offset: Int)
 

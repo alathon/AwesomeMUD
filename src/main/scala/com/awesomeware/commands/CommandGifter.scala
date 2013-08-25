@@ -1,4 +1,4 @@
-package awesomeware.commands
+package com.awesomeware.commands
 
 /**
  * Utility trait to make giving commands as 'sets' easier.
@@ -18,9 +18,6 @@ trait CommandGifter {
   }
 
   def removeAll(to: Commander) {
-    to.commands
-    for (cmd <- commands) {
-
-    }
+    to.commands --= commands
   }
 }

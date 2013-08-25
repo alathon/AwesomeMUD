@@ -1,6 +1,7 @@
-package awesomeware.commands
+package com.awesomeware.commands
 
-import awesomeware.core.entities.GameEntity
+import com.awesomeware.core.entities.GameEntity
+
 
 abstract class CommandResult(val count: Integer, val command: Command, val output: Seq[Any]) extends Ordered[CommandResult] {
   def compare(that: CommandResult) = {

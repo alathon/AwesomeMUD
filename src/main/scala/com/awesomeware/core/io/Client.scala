@@ -1,15 +1,14 @@
-package awesomeware.core.io
+package com.awesomeware.core.io
 
 import akka.actor._
 import java.net.InetSocketAddress
 import akka.util.ByteString
 import akka.io.Tcp
-import awesomeware.core.entities.Mob
-import awesomeware.content.staticContent._
-import awesomeware.core.entities.GameEntity
-import awesomeware.commands._
-import awesomeware.commands.impl._
-import awesomeware.core.World
+import com.awesomeware.core.entities.{Mob, GameEntity}
+import com.awesomeware.commands.{NoCommand, ParseFailure, ParseSuccess, Commander}
+import com.awesomeware.core.World
+import com.awesomeware.commands.impl.{CommunicationCommands, MovementCommands, BasicUtilityCommands}
+import com.awesomeware.content.staticContent.TheVoid
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
@@ -62,10 +61,10 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
     if (color)
       this.write(ByteString(Color.colorize(b.toString())))
     else
-      this.write(ByteString(Color.colorize(b.toString(), false)))
+      this.write(ByteString(Color.colorize(b.toString(), keep = false)))
   }
 
-  def getCommandSource[S <: GameEntity](): S = this.player.asInstanceOf[S]
+  def getCommandSource[S <: GameEntity]: S = this.player.asInstanceOf[S]
 
   def handleInput(text: String) {
     text.trim() match {
@@ -88,6 +87,8 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
    */
   World.clients += Client.this
   BasicUtilityCommands.giveAll(this)
+  MovementCommands.giveAll(this)
+  CommunicationCommands.giveAll(this)
 
   var player: Mob = new Mob()
   player.client = Some(this)

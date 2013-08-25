@@ -1,7 +1,7 @@
-package awesomeware.core.entities
+package com.awesomeware.core.entities
 
-import awesomeware.core.DescType._
-import awesomeware.core.Container
+import com.awesomeware.core.Container
+import com.awesomeware.core.DescType._
 
 class Mob extends GameEntity with Container {
   def describeTo(to: GameEntity, dType: DescType): String = {

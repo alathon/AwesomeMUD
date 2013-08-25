@@ -1,10 +1,9 @@
-package awesomeware.core.entities
+package com.awesomeware.core.entities
 
-import awesomeware.core.DescType._
-import awesomeware.core.Container
-import awesomeware.core.DescType
 import scala.Predef._
 import scala.Some
+import com.awesomeware.core.Container
+import com.awesomeware.core.DescType._
 
 case class RoomExit(from: Room, to: Container)
 
@@ -56,14 +55,14 @@ class Room extends GameEntity with Container {
 
   override def entered(obj: GameEntity, from: Container) {
     for (e <- inventory diff List(obj)) {
-      e.receiveText(s"${obj.describeTo(e, DescType.Name)} arrives from ${obj.direction}.")
+      e.receiveText(s"${obj.describeTo(e, Name)} arrives from ${obj.direction}.")
     }
-    obj.receiveText(this.describeTo(obj, DescType.LongDesc))
+    obj.receiveText(this.describeTo(obj, LongDesc))
   }
 
   override def exited(obj: GameEntity, to: Container) {
     for (e <- inventory) {
-      e.receiveText(s"${obj.describeTo(e, DescType.Name)} leaves towards ${obj.direction}.")
+      e.receiveText(s"${obj.describeTo(e, Name)} leaves towards ${obj.direction}.")
     }
   }
 }

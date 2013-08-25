@@ -1,4 +1,4 @@
-package awesomeware.core.io
+package com.awesomeware.core.io
 
 object Color {
 

@@ -1,7 +1,8 @@
-package awesomeware.commands
+package com.awesomeware.commands
 
-import awesomeware.core.{World, Container}
-import awesomeware.core.entities.{GameEntity, Mob, Room}
+import com.awesomeware.core.entities.{Room, GameEntity, Mob}
+import com.awesomeware.core.{World, Container}
+
 
 abstract class CommandComponent[T](val optional: Boolean = false) {
   def shouldAdd: Boolean

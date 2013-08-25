@@ -1,9 +1,10 @@
-package awesomeware.content.staticContent
+package com.awesomeware.content.staticContent
 
-import awesomeware.core.entities.{ContainerExit, Room}
+import com.awesomeware.core.entities.{ContainerExit, Room}
+
 
 object OtherVoid extends Room {
-  description = "This void is ALSO full of emtpiness."
+  description = "This void is ALSO full of emptiness."
   name = "The Other Void"
   exits = Set(new ContainerExit(Set("south"), this, TheVoid), new ContainerExit(Set("north"), this, TheVoid))
 }

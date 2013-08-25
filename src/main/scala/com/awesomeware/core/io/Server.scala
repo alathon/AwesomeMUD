@@ -1,15 +1,15 @@
-package awesomeware.core.io
+package com.awesomeware.core.io
 
 import akka.actor._
 import java.net.InetSocketAddress
 import akka.io.{IO, Tcp}
 
-object GameServer {
+object Server {
   def props(endpoint: InetSocketAddress): Props =
-    Props(new GameServer(endpoint))
+    Props(new Server(endpoint))
 }
 
-class GameServer(endpoint: InetSocketAddress) extends Actor with ActorLogging {
+class Server(endpoint: InetSocketAddress) extends Actor with ActorLogging {
   IO(Tcp)(context.system) ! Tcp.Bind(self, endpoint)
 
   override def receive: Receive = {
