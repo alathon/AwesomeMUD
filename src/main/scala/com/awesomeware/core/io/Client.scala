@@ -6,7 +6,7 @@ import akka.util.ByteString
 import akka.io.Tcp
 import com.awesomeware.core.entities.{Mob, GameEntity}
 import com.awesomeware.commands.{NoCommand, ParseFailure, ParseSuccess, Commander}
-import com.awesomeware.core.World
+import com.awesomeware.core.{MSDPMessages, Telnet, MSDP, World}
 import com.awesomeware.commands.impl.{CommunicationCommands, MovementCommands, BasicUtilityCommands}
 import com.awesomeware.content.staticContent.TheVoid
 
@@ -22,11 +22,41 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
     connection ! Tcp.Write(s)
   }
 
+  def setMSDP(active: Boolean) {
+    this.msdpActive = active
+    if (active) {
+      this.receiveText("MSDP activated.")
+    } else {
+      this.receiveText("MSDP deactivated.")
+    }
+  }
+
+  def handleIAC(data: ByteString) {
+    val b = new StringBuilder()
+    for (byte <- data) {
+      b ++= byte.toString
+      b ++= " "
+    }
+    log.info("Bytes received: " + b.toString())
+
+    MSDP.readBytes(data.toList) match {
+      case Some(e) =>
+        MSDP.reactTo(this, e)
+      case None =>
+        println(s"Unable to decode data: $data")
+    }
+
+  }
+
   def receive: Receive = {
     case Tcp.Received(data: ByteString) =>
-      val text = data.utf8String.replaceAll("[\r\n]+$", "")
-      this.handleInput(text)
-      log.info("Received {} from remote address {}", text, remote)
+      if (data(0) == Telnet.IAC) {
+        this.handleIAC(data)
+      } else {
+        val text = data.utf8String.replaceAll("[\r\n]+$", "")
+        this.handleInput(text)
+        log.info("Received {} from remote address {}", text, remote)
+      }
     case _: Tcp.ConnectionClosed =>
       log.info("Stopping, because connection for remote address {} closed", remote)
       removeFromGame()
@@ -56,8 +86,6 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
       else b ++= "\r\n> "
     }
 
-    // Prevent any kind of color bleeding.
-
     if (color)
       this.write(ByteString(Color.colorize(b.toString())))
     else
@@ -67,20 +95,32 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   def getCommandSource[S <: GameEntity]: S = this.player.asInstanceOf[S]
 
   def handleInput(text: String) {
-    text.trim() match {
-      case "" =>
-        receiveText("")
-      case _ =>
-        parseCommand(text) match {
-          case ParseSuccess(_, cmd, out) =>
-            cmd.go(this.player, out)
-          case ParseFailure(_, cmd, _) =>
-            this.receiveText(s"Invalid syntax for command: ${cmd.name}")
-          case NoCommand() =>
-            this.receiveText(s"No such command: $text")
+    inputGrabber.active match {
+      case true =>
+        inputGrabber.receive(text, Client.this)
+      case false =>
+        text.trim() match {
+          case "" =>
+            receiveText("")
+          case _ =>
+            parseCommand(text) match {
+              case ParseSuccess(_, cmd, out) =>
+                cmd.go(this.player, out)
+              case ParseFailure(_, cmd, _) =>
+                this.receiveText(s"Invalid syntax for command: ${cmd.name}")
+              case NoCommand() =>
+                this.receiveText(s"No such command: $text")
+            }
         }
     }
   }
+
+
+  var msdpActive: Boolean = false
+  val inputGrabber = new InputGrabber()
+
+  // Try and enable MSDP
+  this.write(MSDPMessages.willMSDP)
 
   /**
    * Login stuff.

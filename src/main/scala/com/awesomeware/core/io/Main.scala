@@ -8,6 +8,6 @@ object Main extends App {
   val endpoint = new InetSocketAddress("0.0.0.0", 8848)
   sys.actorOf(Server.props(endpoint), "Awesome")
 
-  readLine(s"Hit ENTER to continue")
+  readLine(s"Hit ENTER to continue\n")
   sys.shutdown()
 }
