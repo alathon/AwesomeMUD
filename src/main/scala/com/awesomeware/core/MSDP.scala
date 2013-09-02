@@ -96,7 +96,7 @@ object MSDP {
   def message(bs: Byte*): ByteString = {
     bs.foldLeft(ByteString())((r, c) => r ++ ByteString(c))
   }
-
+  
   def readBytes(bs: List[Byte]): Option[MSDPMessage] = bs match {
     case List(Telnet.IAC, Telnet.DO, Telnet.MSDP) =>
       Some(MSDPDo)

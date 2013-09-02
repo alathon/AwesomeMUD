@@ -9,6 +9,7 @@ import com.awesomeware.commands.{NoCommand, ParseFailure, ParseSuccess, Commande
 import com.awesomeware.core.{MSDPMessages, Telnet, MSDP, World}
 import com.awesomeware.commands.impl.{CommunicationCommands, MovementCommands, BasicUtilityCommands}
 import com.awesomeware.content.staticContent.TheVoid
+import com.awesomeware.core.TestMsgs
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
@@ -31,6 +32,66 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
     }
   }
 
+  def handleTelnetDont(doType: Byte) = doType match {
+    case Telnet.MSDP =>
+      this.setMSDP(false)
+    case _ =>
+      log.error("Unhandled IAC DONT: " + doType)
+  }
+  
+  def handleTelnetDo(doType: Byte) = doType match {
+    case Telnet.MSDP =>
+      this.setMSDP(true)
+    case _ =>
+      log.error("Unhandled IAC DO: " + doType)
+  }
+  
+  def handleMsdpData(body: List[Byte]) {
+	  val msg = MSDP.parseData(body)
+	  log.info("Got message: " + msg)
+  }
+  
+  def handleTelnetSendByte(protocol: Byte, xs: List[Byte]): List[Byte] = {
+    val body = xs.takeWhile(_ != Telnet.IAC)
+    val afterBody = xs(body.length+1)
+    
+    afterBody match {
+      case Telnet.SE =>
+        protocol match {
+          case Telnet.MSDP =>
+            handleMsdpData(body)
+          case _ =>
+            log.error("Unhandled protocol: " + protocol)
+        }
+        xs.drop(body.length+2) // Drop the IAC and the SE bytes.
+
+      case _ =>
+        log.error("Something wrong with byte stream: " + xs)
+        List[Byte]()
+    }
+  }
+
+  def test(bs: List[Byte]): List[Byte] = bs match {
+    case Nil =>
+      List()
+
+    case Telnet.IAC :: Telnet.DO :: x :: xs =>
+      handleTelnetDo(x)
+      test(xs)
+      
+    case Telnet.IAC :: Telnet.DONT :: x :: xs =>
+      handleTelnetDont(x)
+      test(xs)
+   
+    case Telnet.IAC :: Telnet.SB :: x :: xs =>
+      val rest = handleTelnetSendByte(x, xs)
+      test(rest)
+
+    case _ =>
+      log.error("Unsupported Telnet.IAC case: " + bs)
+      List()
+  }
+    
   def handleIAC(data: ByteString) {
     val b = new StringBuilder()
     for (byte <- data) {
@@ -38,14 +99,8 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
       b ++= " "
     }
     log.info("Bytes received: " + b.toString())
-
-    MSDP.readBytes(data.toList) match {
-      case Some(e) =>
-        MSDP.reactTo(this, e)
-      case None =>
-        println(s"Unable to decode data: $data")
-    }
-
+    
+    test(data.toList)
   }
 
   def receive: Receive = {
@@ -120,8 +175,11 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   val inputGrabber = new InputGrabber()
 
   // Try and enable MSDP
-  this.write(MSDPMessages.willMSDP)
+  //this.write(MSDPMessages.willMSDP)
 
+  this.handleIAC(TestMsgs.clientDo)
+  this.handleIAC(TestMsgs.clientDont)
+  this.handleIAC(TestMsgs.msdpVar)
   /**
    * Login stuff.
    */
