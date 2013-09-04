@@ -15,7 +15,7 @@ case class MSDPTable(values: Map[String, String]) extends MSDPValue
 
 case class MSDPVar(value: String) extends MSDPValue
 
-case class MSDPOutput[T](varName: String, varValue: MSDPValue) extends MSDPMessage
+case class MSDPOutput(varName: String, varValue: MSDPValue) extends MSDPMessage
 
 case object MSDPDo extends MSDPMessage
 
@@ -78,44 +78,8 @@ object MSDPMessages {
 }
 
 object MSDP {
-  def reactTo(client: Client, message: MSDPMessage) {
-    println(s"Reacting to $message")
-
-    message match {
-      case MSDPDo =>
-        client.setMSDP(true)
-      case MSDPDont =>
-        client.setMSDP(false)
-      case MSDPOutput(varName: String, varValue: MSDPValue) =>
-        println(s"TODO: React to $varName / $varValue")
-      // TODO: React to different messages based on varName
-      case _ =>
-    }
-  }
-
   def message(bs: Byte*): ByteString = {
     bs.foldLeft(ByteString())((r, c) => r ++ ByteString(c))
-  }
-  
-  def readBytes(bs: List[Byte]): Option[MSDPMessage] = bs match {
-    case List(Telnet.IAC, Telnet.DO, Telnet.MSDP) =>
-      Some(MSDPDo)
-    case List(Telnet.IAC, Telnet.DONT, Telnet.MSDP) =>
-      Some(MSDPDont)
-    case e if bs.startsWith(Seq(Telnet.IAC, Telnet.SB, Telnet.MSDP, Telnet.MSDP_VAR)) &&
-      bs.endsWith(Seq(Telnet.IAC, Telnet.SE)) =>
-      println(s"Parsing MSDP Data packet: ${bs.slice(4, bs.size).takeWhile(_ != Telnet.IAC)}")
-      parseData(bs.slice(4, bs.size).takeWhile(_ != Telnet.IAC))
-    case _ =>
-      if (bs.startsWith(Seq(Telnet.IAC, Telnet.SB, Telnet.MSDP, Telnet.MSDP_VAR))) {
-        println("Start is correct.")
-      }
-
-      if (bs.endsWith(Seq(Telnet.IAC, Telnet.SE))) {
-        println("End is correct.")
-      }
-
-      None
   }
 
   // Data has had MSDP_TABLE_OPEN and MSDP_TABLE_CLOSE removed.
@@ -125,7 +89,7 @@ object MSDP {
       case Nil =>
         Map[String, String]()
       // Step 1: Match an MSDP_VAR "String" pair.
-      case e :: es if e == Telnet.MSDP_VAR =>
+      case Telnet.MSDP_VAR :: es =>
         es.takeWhile(_ != Telnet.MSDP_VAL) match {
           case Nil =>
             null
@@ -137,15 +101,23 @@ object MSDP {
               case Nil =>
                 null
 
-              case x :: xs if x == Telnet.MSDP_VAL =>
+              case Telnet.MSDP_VAL :: xs =>
                 xs.takeWhile(_ != Telnet.MSDP_VAR) match {
                   case Nil => null
                   case bytes2 =>
                     val varValue = ByteString(bytes2.toArray).utf8String
                     Map[String, String](varName -> varValue) ++ inner(xs.drop(bytes.length))
                 }
+                
+              case e =>
+                println(s"Serious issue: $e not covered!")
+                null
             }
         }
+        
+      case e =>
+        println(s"Serious issue: $e not covered!")
+        null
     }
 
     inner(bs) match {
@@ -179,56 +151,48 @@ object MSDP {
     }
   }
 
-  def parseData(bs: List[Byte]): Option[MSDPMessage] = {
-    // Data is of the format <VARIABLE> MSDP_VAL <VALUE>
+  def parseData(bs: List[Byte]): Option[MSDPMessage] = bs match {
+    // Data is of the format MSDP_VAR <VARIABLE> MSDP_VAL <VALUE>
     // where <VALUE> can either be a table, array, or a string.
-    val varBytes = bs.takeWhile(_ != Telnet.MSDP_VAL)
-    val after = bs.drop(varBytes.length)
-    val varName = ByteString(varBytes.toArray).utf8String
+    case Telnet.MSDP_VAR :: xs =>
+	    val varBytes = xs.takeWhile(_ != Telnet.MSDP_VAL)
+	    val after = xs.drop(varBytes.length)
+	    val varName = ByteString(varBytes.toArray).utf8String
+	
+	    after match {
+	      case Telnet.MSDP_VAL :: Telnet.MSDP_ARRAY_OPEN :: ys =>
+	        ys.last match {
+	          case Telnet.MSDP_ARRAY_CLOSE =>
+	            val data = ys.dropRight(1)
+	            parseArray(data) match {
+	              case None => None
+	              case Some(array: MSDPArray) => Some(MSDPOutput(varName, array))
+	            }
+	            
+	          case _ => None
+	        }
+	
+	      case Telnet.MSDP_VAL :: Telnet.MSDP_TABLE_OPEN :: ys =>
+	        ys.last match {
+	          case Telnet.MSDP_TABLE_CLOSE =>
+	            val data = ys.dropRight(1)
+	            parseTable(data) match {
+	              case None => None
+	              case Some(table: MSDPTable) => Some(MSDPOutput(varName, table))
+	            }
+	          case _ => None
+	        }
 
-    after.slice(0, 2) match {
-      case List(Telnet.MSDP_VAL, Telnet.MSDP_ARRAY_OPEN) =>
-        // Check for missing MSDP_ARRAY_CLOSE
-        if (!after.endsWith(Seq(Telnet.MSDP_ARRAY_CLOSE)))
-          return None
-
-        val data = after.drop(2).takeWhile(_ != Telnet.MSDP_ARRAY_CLOSE)
-
-        parseArray(data) match {
-          case None =>
-            None
-          case Some(array: MSDPArray) =>
-            Some(MSDPOutput(varName, array))
-          case _ =>
-            println("Parse error!")
-            None
-        }
-
-      case List(Telnet.MSDP_VAL, Telnet.MSDP_TABLE_OPEN) =>
-        // Check for missing MSDP_TABLE_CLOSE
-        if (!after.endsWith(Seq(Telnet.MSDP_TABLE_CLOSE)))
-          return None
-
-        val data = after.drop(2).takeWhile(_ != Telnet.MSDP_TABLE_CLOSE)
-
-
-        parseTable(data) match {
-          case None =>
-            None
-          case Some(table: MSDPTable) =>
-            Some(MSDPOutput(varName, table))
-          case _ =>
-            println("Parse error!")
-            None
-        }
-
-      case List(Telnet.MSDP_VAL, _) =>
-        None
-
-      case _ =>
-        val varValue = ByteString(after.drop(1).toArray).utf8String
-        Some(MSDPOutput(varName, MSDPVar(varValue)))
-    }
+	      case Telnet.MSDP_VAL :: ys =>
+	        val varValue = ByteString(ys.toArray).utf8String
+	        Some(MSDPOutput(varName, MSDPVar(varValue)))
+	        
+	      case _ => 
+	        None
+	    }
+    case _ =>
+      None
+    
   }
 }
 

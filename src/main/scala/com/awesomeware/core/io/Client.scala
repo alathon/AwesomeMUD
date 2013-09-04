@@ -10,6 +10,7 @@ import com.awesomeware.core.{MSDPMessages, Telnet, MSDP, World}
 import com.awesomeware.commands.impl.{CommunicationCommands, MovementCommands, BasicUtilityCommands}
 import com.awesomeware.content.staticContent.TheVoid
 import com.awesomeware.core.TestMsgs
+import com.awesomeware.core.MSDPOutput
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
@@ -25,6 +26,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
 
   def setMSDP(active: Boolean) {
     this.msdpActive = active
+
     if (active) {
       this.receiveText("MSDP activated.")
     } else {
@@ -47,8 +49,12 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   }
   
   def handleMsdpData(body: List[Byte]) {
-	  val msg = MSDP.parseData(body)
-	  log.info("Got message: " + msg)
+    MSDP.parseData(body) match {
+      case Some(o: MSDPOutput) =>
+        log.info(s"Got output: Name:${o.varName} Value:${o.varValue}")
+      case _ =>
+        log.error("Invalid MSDP Data body: " + body)
+    }
   }
   
   def handleTelnetSendByte(protocol: Byte, xs: List[Byte]): List[Byte] = {
@@ -180,6 +186,8 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   this.handleIAC(TestMsgs.clientDo)
   this.handleIAC(TestMsgs.clientDont)
   this.handleIAC(TestMsgs.msdpVar)
+  this.handleIAC(TestMsgs.msdpTable)
+  this.handleIAC(TestMsgs.msdpArray)
   /**
    * Login stuff.
    */
