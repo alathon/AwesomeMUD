@@ -82,6 +82,43 @@ object MSDP {
     bs.foldLeft(ByteString())((r, c) => r ++ ByteString(c))
   }
 
+  def takeVar(bs: List[Byte]): Option[(String, List[Byte])] = bs match {
+    case Telnet.MSDP_VAR :: Nil => 
+      None
+
+    case Telnet.MSDP_VAR :: xs =>
+      val bytes = xs.takeWhile(_ != Telnet.MSDP_VAL)
+      bytes match {
+        case Nil =>
+          None
+        case a =>
+          val varName = ByteString(bytes.toArray).utf8String
+          Some(varName, xs.drop(bytes.length))
+      }
+
+    case _ =>
+      None
+  }
+
+  def takeSimpleVal(bs: List[Byte]): Option[(String, List[Byte])] = bs match {
+    case Telnet.MSDP_VAL :: Nil => 
+      None
+
+    case Telnet.MSDP_VAL :: xs =>
+      val s = Seq(Telnet.MSDP_ARRAY_CLOSE,Telnet.MSDP_TABLE_CLOSE,Telnet.MSDP_VAR)
+      val bytes = xs.takeWhile(!s.contains(_))
+      bytes match {
+        case Nil =>
+          None
+        case a =>
+          val varName = ByteString(bytes.toArray).utf8String
+          Some(varName, xs.drop(bytes.length))
+      }
+
+    case _ =>
+      None    
+  }
+  
   // Data has had MSDP_TABLE_OPEN and MSDP_TABLE_CLOSE removed.
   // So everything inside should be MSDP_VAR "Name" MSDP_VAL "Value" quads
   def parseTable(bs: List[Byte]): Option[MSDPTable] = {
