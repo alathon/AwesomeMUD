@@ -24,100 +24,12 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
     connection ! Tcp.Write(s)
   }
 
-  def setMSDP(active: Boolean) {
-    this.msdpActive = active
-
-    if (active) {
-      this.receiveText("MSDP activated.")
-    } else {
-      this.receiveText("MSDP deactivated.")
-    }
-  }
-
-  def handleTelnetDont(doType: Byte) = doType match {
-    case Telnet.MSDP =>
-      this.setMSDP(false)
-    case _ =>
-      log.error("Unhandled IAC DONT: " + doType)
-  }
-  
-  def handleTelnetDo(doType: Byte) = doType match {
-    case Telnet.MSDP =>
-      this.setMSDP(true)
-    case _ =>
-      log.error("Unhandled IAC DO: " + doType)
-  }
-  
-  def handleMsdpData(body: List[Byte]) {
-    MSDP.parseData(body) match {
-      case Some(o: MSDPOutput) =>
-        log.info(s"Got output: Name:${o.varName} Value:${o.varValue}")
-      case _ =>
-        log.error("Invalid MSDP Data body: " + body)
-    }
-  }
-  
-  def handleTelnetSendByte(protocol: Byte, xs: List[Byte]): List[Byte] = {
-    val body = xs.takeWhile(_ != Telnet.IAC)
-    val afterBody = xs(body.length+1)
-    
-    afterBody match {
-      case Telnet.SE =>
-        protocol match {
-          case Telnet.MSDP =>
-            handleMsdpData(body)
-          case _ =>
-            log.error("Unhandled protocol: " + protocol)
-        }
-        xs.drop(body.length+2) // Drop the IAC and the SE bytes.
-
-      case _ =>
-        log.error("Something wrong with byte stream: " + xs)
-        List[Byte]()
-    }
-  }
-
-  def test(bs: List[Byte]): List[Byte] = bs match {
-    case Nil =>
-      List()
-
-    case Telnet.IAC :: Telnet.DO :: x :: xs =>
-      handleTelnetDo(x)
-      test(xs)
-      
-    case Telnet.IAC :: Telnet.DONT :: x :: xs =>
-      handleTelnetDont(x)
-      test(xs)
-   
-    case Telnet.IAC :: Telnet.SB :: x :: xs =>
-      val rest = handleTelnetSendByte(x, xs)
-      test(rest)
-
-    case _ =>
-      log.error("Unsupported Telnet.IAC case: " + bs)
-      List()
-  }
-    
-  def handleIAC(data: ByteString) {
-    val b = new StringBuilder()
-    for (byte <- data) {
-      b ++= byte.toString
-      b ++= " "
-    }
-    log.info("Bytes received: " + b.toString())
-    
-    test(data.toList)
-  }
-
   def receive: Receive = {
     case Tcp.Received(data: ByteString) =>
-      if (data(0) == Telnet.IAC) {
-        this.handleIAC(data)
-      } else {
-        val text = data.utf8String.replaceAll("[\r\n]+$", "")
+      val text = data.utf8String.replaceAll("[\r\n]+$", "")
         this.handleInput(text)
         log.info("Received {} from remote address {}", text, remote)
-      }
+
     case _: Tcp.ConnectionClosed =>
       log.info("Stopping, because connection for remote address {} closed", remote)
       removeFromGame()
@@ -177,17 +89,8 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   }
 
 
-  var msdpActive: Boolean = false
   val inputGrabber = new InputGrabber()
 
-  // Try and enable MSDP
-  //this.write(MSDPMessages.willMSDP)
-
-  this.handleIAC(TestMsgs.clientDo)
-  this.handleIAC(TestMsgs.clientDont)
-  this.handleIAC(TestMsgs.msdpVar)
-  this.handleIAC(TestMsgs.msdpTable)
-  this.handleIAC(TestMsgs.msdpArray)
   /**
    * Login stuff.
    */
