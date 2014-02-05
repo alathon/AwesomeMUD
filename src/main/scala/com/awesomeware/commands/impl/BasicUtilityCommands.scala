@@ -25,6 +25,8 @@ sealed class Quit extends Command {
             for (entity <- source.location.inventory diff List(source)) {
               entity.receiveText(s"${source.describeTo(entity, Name)} quits.")
             }
+            
+            c.removeFromGame()
           case None => 
         }
       case _ => 

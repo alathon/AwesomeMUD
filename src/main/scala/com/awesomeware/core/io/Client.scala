@@ -45,6 +45,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   def removeFromGame() {
     World.clients -= this
     player = null
+    context.stop(self)
   }
 
   def receiveText(str: String, prompt: Boolean = true, color: Boolean = true, newline: Boolean = true) {
