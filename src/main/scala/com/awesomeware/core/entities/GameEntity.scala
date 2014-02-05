@@ -15,7 +15,7 @@ abstract class GameEntity {
   var location: Container = null
   var client: Option[Client] = None
   var name: String = "Unnamed Entity"
-  var direction: String = "nowhere"
+  var direction: Option[String] = None
 
   def receiveText(text: String, prompt: Boolean = true, newline: Boolean = true) {
     client match {
@@ -36,13 +36,9 @@ abstract class GameEntity {
       return false
     }
 
-    dir match {
-      case Some(d) => this.direction = d
-      case None =>
-    }
-
     val oldLoc = this.location
     this.location = to
+    this.direction = dir
     to.addEntity(this)
     if (oldLoc != null) {
       oldLoc.removeEntity(this)

@@ -21,15 +21,9 @@ class Mob extends GameEntity with Container {
     val lowerTo = to.toLowerCase
     location match {
       case r: Room =>
-        r.getAllExits.contains(lowerTo) match {
-          case true =>
-            r.getExit(lowerTo) match {
-              case None =>
-              case Some(exit) =>
-                this.move(exit.to, dir)
-            }
-          case false =>
-            this.receiveText(s"No such exit as $to")
+        r.getExit(lowerTo) match {
+          case None => this.receiveText(s"No such exit as $to")
+          case Some(exit) => this.move(exit.to, dir)
         }
       case _ =>
         throw new NotImplementedError("Haven't implemented movement in non-rooms yet.")

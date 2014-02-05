@@ -55,14 +55,24 @@ class Room extends GameEntity with Container {
 
   override def entered(obj: GameEntity, from: Container) {
     for (e <- inventory diff List(obj)) {
-      e.receiveText(s"${obj.describeTo(e, Name)} arrives from ${obj.direction}.")
+      var text = s"${obj.describeTo(e, Name)} arrives"
+      obj.direction match {
+        case None => text += "."
+        case Some(dir) => text += " from ${dir}."
+      }
+      e.receiveText(text)
     }
     obj.receiveText(this.describeTo(obj, LongDesc))
   }
 
   override def exited(obj: GameEntity, to: Container) {
     for (e <- inventory) {
-      e.receiveText(s"${obj.describeTo(e, Name)} leaves towards ${obj.direction}.")
+      var text = s"${obj.describeTo(e, Name)} leaves"
+      obj.direction match {
+        case None => text += "."
+        case Some(dir) => text += " towards ${dir}."
+      }
+      e.receiveText(text)
     }
   }
 }
