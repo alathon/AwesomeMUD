@@ -2,8 +2,6 @@ package com.awesomeware.core.io
 
 import akka.actor._
 import java.net.InetSocketAddress
-import com.awesomeware.core.MSDP
-import com.awesomeware.core.Telnet
 
 object Main extends App {
   val sys = ActorSystem("AwesomeMUD")

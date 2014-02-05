@@ -6,11 +6,9 @@ import akka.util.ByteString
 import akka.io.Tcp
 import com.awesomeware.core.entities.{Mob, GameEntity}
 import com.awesomeware.commands.{NoCommand, ParseFailure, ParseSuccess, Commander}
-import com.awesomeware.core.{MSDPMessages, Telnet, MSDP, World}
+import com.awesomeware.core.{World}
 import com.awesomeware.commands.impl.{CommunicationCommands, MovementCommands, BasicUtilityCommands}
 import com.awesomeware.content.staticContent.TheVoid
-import com.awesomeware.core.TestMsgs
-import com.awesomeware.core.MSDPOutput
 
 object Client {
   def props(remote: InetSocketAddress, connection: ActorRef): Props =
