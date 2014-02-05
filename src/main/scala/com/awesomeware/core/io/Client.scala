@@ -43,7 +43,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   context.watch(connection)
 
   def removeFromGame() {
-    World.clients -= Client.this
+    World.clients -= this
     player = null
   }
 
@@ -92,7 +92,7 @@ class Client(remote: InetSocketAddress, connection: ActorRef)
   /**
    * Login stuff.
    */
-  World.clients += Client.this
+  World.clients += this
   BasicUtilityCommands.giveAll(this)
   MovementCommands.giveAll(this)
   CommunicationCommands.giveAll(this)

@@ -7,17 +7,11 @@ package com.awesomeware.commands
 trait CommandGifter {
   val commands: Set[Command]
 
-  def isEligable(cmd: Command, commander: Commander): Boolean
-
   def giveAll(to: Commander) {
-    for (cmd <- commands) {
-      if (isEligable(cmd, to)) {
-        to.addCommand(cmd)
-      }
-    }
+    to.addCommands(this.commands.filter(cmd => cmd.isEligable(to)))
   }
 
-  def removeAll(to: Commander) {
-    to.commands --= commands
+  def removeAll(from: Commander) {
+    from.commands --= this.commands
   }
 }

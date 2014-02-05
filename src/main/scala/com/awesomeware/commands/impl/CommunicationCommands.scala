@@ -6,17 +6,16 @@ import com.awesomeware.core.entities.{Mob, GameEntity}
 
 object CommunicationCommands extends CommandGifter {
   val commands = Set[Command](new Tell(), new Say())
-
-  def isEligable(cmd: Command, commander: Commander): Boolean = true
 }
 
 
 sealed class Say extends Command {
   val components = List(Or(Word("say"), Word("'")), Anything(optional = true))
   val name = "say"
-
+  val category = "Communication"
+ 
   def go(source: GameEntity, args: Seq[Any]) {
-    if (args.length == 0) {
+    if (args.isEmpty) {
       source.receiveText("Say what??")
       return
     }
@@ -31,6 +30,7 @@ sealed class Say extends Command {
 sealed class Tell extends Command {
   val components = List(Word("tell"), Ref("mob", "here", optional = true), Anything(optional = true))
   val name = "tell"
+  val category = "Communication"
 
   def go(source: GameEntity, args: Seq[Any]) {
     if (args.isEmpty) {

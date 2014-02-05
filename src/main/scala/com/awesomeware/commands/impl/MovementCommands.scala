@@ -6,15 +6,13 @@ import com.awesomeware.core.entities.{Mob, GameEntity}
 
 object MovementCommands extends CommandGifter {
   val commands = Set[Command](new North(), new South(), new East(), new West())
-
-  def isEligable(cmd: Command, commander: Commander): Boolean = true
 }
 
 
 sealed class North extends Command {
   val components = List(Or(Word("north"), Word("n")))
   val name = "north"
-
+  val category = "Movement"
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
@@ -27,7 +25,7 @@ sealed class North extends Command {
 sealed class South extends Command {
   val components = List(Or(Word("south"), Word("s")))
   val name = "south"
-
+  val category = "Movement"
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
@@ -40,7 +38,7 @@ sealed class South extends Command {
 sealed class East extends Command {
   val components = List(Or(Word("east"), Word("e")))
   val name = "east"
-
+  val category = "Movement"
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>
@@ -53,7 +51,7 @@ sealed class East extends Command {
 sealed class West extends Command {
   val components = List(Or(Word("west"), Word("w")))
   val name = "west"
-
+  val category = "Movement"
   def go(source: GameEntity, args: Seq[Any]) {
     source match {
       case m: Mob =>

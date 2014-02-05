@@ -32,7 +32,8 @@ case class Failure[+T](msg: String, in: ParseState) extends Result[T] {
 abstract class Command {
   val components: Seq[CommandComponent[_]]
   val name: String
-
+  val category: String
+  
   implicit def string2option(s: String): Option[String] = {
     s match {
       case "" => None
@@ -41,6 +42,8 @@ abstract class Command {
   }
 
   def go(source: GameEntity, args: Seq[Any])
+
+  def isEligable(cmder: Commander): Boolean = true
 
   def parseInput(in: ParseState, source: GameEntity): CommandResult = {
     val out = ArrayBuffer[Any]()
